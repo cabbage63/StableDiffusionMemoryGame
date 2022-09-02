@@ -2,6 +2,9 @@ let cardInitialized = false;
 
 let container;
 
+// State
+trialNum = 0;
+
 const board = [];
 const images = [];
 const cardNumX = 2;
@@ -77,12 +80,12 @@ const initCards = () => {
             panel.style.height = `${cardSize-cardMargin}px`;
             panel.style.backgroundColor = `#f00`;
             panel.style.backgroundSize = `cover`
-            panel.label = shuffledImages[x+y*cardNumX].label
+            panel.label = shuffledImages[x+y*cardNumX].label;
             panel.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
             panel.style.borderRadius = `10px`;
             panel.style.transition = `all 150ms linear`;
             container.appendChild(panel);
-            board[y][x] = {panel, color: 0};
+            board[y][x] = {panel, x: x, y: y, opend: 0, tried: 0, paired: 0};
             panel.onpointerdown = (e) => {
                 e.preventDefault();
                 ondown(x, y);
@@ -99,22 +102,32 @@ const flip = async(x, y) => {
     isAnimation = true;
 
     const panel = board[y][x].panel;
-    let color = board[y][x].color;
-    color = 1 - color;
+    let opend = board[y][x].opend;
+    opend = 1 - opend;
 
     panel.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
-    panel.style.backgroundColor = (color) ? "#00f" : "#f00"
-    panel.style.backgroundImage = (color) ? panel.imageURL : null
+    panel.style.backgroundColor = (opend) ? "#00f" : "#f00"
+    panel.style.backgroundImage = (opend) ? panel.imageURL : null
     panel.style.transform = "perspective(150px) rotateY(-90deg)"
     panel.parentElement.appendChild(panel);
     await new Promise(r => setTimeout(r, 50));
-    panel.style.backgroundColor = (color) ? "#00f" : "#f00"
+    panel.style.backgroundColor = (opend) ? "#00f" : "#f00"
     panel.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
 
     isAnimation = false;
-    board[y][x].color = color
+    board[y][x].opend = opend
+    if(trialNum == 2){
+        // オープンしているもののうちクリアしていないものを裏返す。
+        console.log(board.flat())
+        board.flat().filter(e => e.opend && !e.paired).forEach( (e) => {
+            flip(e.x, e.y);
+            console.log(e.x, e.y);
+            console.log('hoge')
+        });
+        trialNum = 0
+    }
 }
 
 let isGameOver = false;
@@ -125,9 +138,10 @@ const ondown = (x, y) => {
     if(isGameOver){
         return;
     }
+    trialNum++;
     flip(x, y);
 
-    isGameOver = board.flat().every((v) => v.color === 1);
+    isGameOver = board.flat().every((v) => v.opend === 1);
 };
 
 window.onload = () => {
