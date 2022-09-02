@@ -8,7 +8,7 @@ trialNum = 0;
 const board = [];
 const images = [];
 const cardNumX = 4;
-const cardNumY = 2;
+const cardNumY = 4;
 const cardSize = 200;
 const cardMargin = 10;
 const init = () => {
@@ -75,8 +75,8 @@ const initCards = () => {
             const panel = document.createElement("div");
             panel.style.textAlign = `center`
             panel.style.fontSize = `24px`
+            panel.style.overflowWrap = `break-word`
             panel.style.textShadow = `0px 2px 1px white, 0px -2px 1px white, 2px -2px 1px white, 2px -2px 1px white, -2px -2px 1px white, -2px -2px 1px white`
-            panel.style.lineHeight = `${cardSize}px`
             panel.style.position = `absolute`;
             panel.style.left = `${x * cardSize}px`;
             panel.style.top = `${y * cardSize}px`;
