@@ -1,37 +1,18 @@
+let cardInitialized = false;
+
+let container;
+
 const board = [];
 const images = [];
-const cardNumX = 5;
-const cardNumY = 5;
+const cardNumX = 2;
+const cardNumY = 2;
 const cardSize = 200;
 const cardMargin = 10;
 const init = () => {
-    initFileReader()
-    const container = document.createElement("div");
+    initFileReader();
+    container = document.createElement("div");
     container.style.position = "relative";
     document.body.appendChild(container);
-
-    for(let y = 0; y < cardNumY; y++){
-        board[y] = [];
-        for(let x = 0; x < cardNumX; x++){
-            const panel = document.createElement("div");
-            panel.style.position = `absolute`;
-            panel.style.left = `${x * cardSize}px`;
-            panel.style.top = `${y * cardSize}px`;
-            panel.style.width = `${cardSize-cardMargin}px`;
-            panel.style.height = `${cardSize-cardMargin}px`;
-            panel.style.backgroundColor = `#f00`;
-            panel.style.backgroundSize = `cover`
-            panel.imageURL = `url("./assets/00000.png")`
-            panel.style.borderRadius = `10px`;
-            panel.style.transition = `all 150ms linear`;
-            container.appendChild(panel);
-            board[y][x] = {panel, color: 0};
-            panel.onpointerdown = (e) => {
-                e.preventDefault();
-                ondown(x, y);
-            }
-        }
-    }
 }
 
 const initFileReader = () => {
@@ -57,11 +38,57 @@ const handleFiles = (e) => {
                 label: label
                 ,data: e.target.result
             });
+
+            // Check images number
+            if(!cardInitialized && images.length >= cardNumX * cardNumY){
+                console.log(`meet number images.length: ${images.length}, number: ${cardNumX * cardNumY}`)
+                // setup images into cards
+                initCards();
+                cardInitialized = true;
+            }
         });
         console.log(fileList[e])
         fileReader.readAsDataURL(fileList[e]);
         console.log(images)
     });
+}
+
+const shuffle = (arrays) => {
+    const array = arrays.slice();
+    for (let i = array.length - 1; i >= 0; i--) {
+      const randomIndex = Math.floor(Math.random() * (i + 1));
+      [array[i], array[randomIndex]] = [array[randomIndex], array[i]];
+    }
+    return array;
+}
+
+const initCards = () => {
+    const shuffledImages = shuffle(images);
+
+    for(let y = 0; y < cardNumY; y++){
+        board[y] = [];
+        for(let x = 0; x < cardNumX; x++){
+            console.log(shuffledImages[x+y*cardNumX])
+            const panel = document.createElement("div");
+            panel.style.position = `absolute`;
+            panel.style.left = `${x * cardSize}px`;
+            panel.style.top = `${y * cardSize}px`;
+            panel.style.width = `${cardSize-cardMargin}px`;
+            panel.style.height = `${cardSize-cardMargin}px`;
+            panel.style.backgroundColor = `#f00`;
+            panel.style.backgroundSize = `cover`
+            panel.label = shuffledImages[x+y*cardNumX].label
+            panel.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
+            panel.style.borderRadius = `10px`;
+            panel.style.transition = `all 150ms linear`;
+            container.appendChild(panel);
+            board[y][x] = {panel, color: 0};
+            panel.onpointerdown = (e) => {
+                e.preventDefault();
+                ondown(x, y);
+            }
+        }
+    }
 }
 
 let isAnimation = false
