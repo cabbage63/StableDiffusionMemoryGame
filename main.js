@@ -7,7 +7,7 @@ trialNum = 0;
 
 const board = [];
 const images = [];
-const cardNumX = 2;
+const cardNumX = 4;
 const cardNumY = 2;
 const cardSize = 200;
 const cardMargin = 10;
@@ -85,7 +85,7 @@ const initCards = () => {
             panel.style.borderRadius = `10px`;
             panel.style.transition = `all 150ms linear`;
             container.appendChild(panel);
-            board[y][x] = {panel, x: x, y: y, opend: 0, tried: 0, paired: 0};
+            board[y][x] = {panel, x: x, y: y, opened: 0, tried: false, paired: false};
             panel.onpointerdown = (e) => {
                 e.preventDefault();
                 ondown(x, y);
@@ -95,43 +95,36 @@ const initCards = () => {
 }
 
 let isAnimation = false
-const flip = async(x, y) => {
+const flip = async (x, y) => {
     if(x < 0 || y < 0 || x >= cardNumX || y >= cardNumY){
         return;
     }
     isAnimation = true;
 
     const panel = board[y][x].panel;
-    let opend = board[y][x].opend;
-    opend = 1 - opend;
+    let opened = board[y][x].opened;
+    opened = 1 - opened;
 
     panel.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
-    panel.style.backgroundColor = (opend) ? "#00f" : "#f00"
-    panel.style.backgroundImage = (opend) ? panel.imageURL : null
+    panel.style.backgroundColor = (opened) ? "#00f" : "#f00"
+    panel.style.backgroundImage = (opened) ? panel.imageURL : null
     panel.style.transform = "perspective(150px) rotateY(-90deg)"
     panel.parentElement.appendChild(panel);
     await new Promise(r => setTimeout(r, 50));
-    panel.style.backgroundColor = (opend) ? "#00f" : "#f00"
+    panel.style.backgroundColor = (opened) ? "#00f" : "#f00"
     panel.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
 
     isAnimation = false;
-    board[y][x].opend = opend
-    if(trialNum == 2){
-        // オープンしているもののうちクリアしていないものを裏返す。
-        console.log(board.flat())
-        board.flat().filter(e => e.opend && !e.paired).forEach( (e) => {
-            flip(e.x, e.y);
-            console.log(e.x, e.y);
-            console.log('hoge')
-        });
-        trialNum = 0
-    }
+    board[y][x].opened = opened
 }
 
 let isGameOver = false;
-const ondown = (x, y) => {
+const ondown = async (x, y) => {
+    if(board[y][x].paired){
+        return;
+    }
     if(isAnimation){
         return;
     }
@@ -139,10 +132,43 @@ const ondown = (x, y) => {
         return;
     }
     trialNum++;
-    flip(x, y);
+    await flip(x, y);
 
-    isGameOver = board.flat().every((v) => v.opend === 1);
+    // ステータス設定
+    console.log(`clicked: ${board[y][x].panel.label}`)
+    board[y][x].tried = true
+    if(trialNum == 2){
+        // チャレンジした２枚が同じラベルならクリア扱いとする
+        const triedCards = board.flat().filter(e => e.tried);
+        console.log(triedCards[0].panel.label);
+        const paired = triedCards.every( (currentValue) => currentValue.panel.label == triedCards[0].panel.label );
+        if (paired){
+            console.log("paired!!")
+            triedCards.forEach((e) => {
+                e.paired = true;
+            });
+        }
+        
+        // オープンしているもののうちクリアしていないものを裏返す。
+        console.log(board.flat())
+        board.flat().filter(e => e.tried && !e.paired).forEach( (e) => {
+            flip(e.x, e.y);
+        });
+
+        triedCards.forEach(e => e.tried = false);
+        trialNum = 0
+    }
+    printState()
+
+    isGameOver = board.flat().every((v) => v.opened === 1);
 };
+
+const printState = () => {
+    board.flat().forEach( e => {
+        console.log(`[${e.x}, ${e.y}] label: ${e.panel.label}, opened: ${e.opened}, tried: ${e.tried}, paired:${e.paired}`)
+    })
+    console.log(`trialNum: ${trialNum}`)
+}
 
 window.onload = () => {
     init();
