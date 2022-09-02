@@ -73,12 +73,16 @@ const initCards = () => {
         for(let x = 0; x < cardNumX; x++){
             console.log(shuffledImages[x+y*cardNumX])
             const panel = document.createElement("div");
+            panel.style.textAlign = `center`
+            panel.style.fontSize = `24px`
+            panel.style.textShadow = `0px 2px 1px white, 0px -2px 1px white, 2px -2px 1px white, 2px -2px 1px white, -2px -2px 1px white, -2px -2px 1px white`
+            panel.style.lineHeight = `${cardSize}px`
             panel.style.position = `absolute`;
             panel.style.left = `${x * cardSize}px`;
             panel.style.top = `${y * cardSize}px`;
             panel.style.width = `${cardSize-cardMargin}px`;
             panel.style.height = `${cardSize-cardMargin}px`;
-            panel.style.backgroundColor = `#f00`;
+            panel.style.backgroundColor = `#b0c4de`;
             panel.style.backgroundSize = `cover`
             panel.label = shuffledImages[x+y*cardNumX].label;
             panel.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
@@ -107,12 +111,12 @@ const flip = async (x, y) => {
 
     panel.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
-    panel.style.backgroundColor = (opened) ? "#00f" : "#f00"
+    panel.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
     panel.style.backgroundImage = (opened) ? panel.imageURL : null
     panel.style.transform = "perspective(150px) rotateY(-90deg)"
     panel.parentElement.appendChild(panel);
     await new Promise(r => setTimeout(r, 50));
-    panel.style.backgroundColor = (opened) ? "#00f" : "#f00"
+    panel.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
     panel.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
 
@@ -146,6 +150,7 @@ const ondown = async (x, y) => {
             console.log("paired!!")
             triedCards.forEach((e) => {
                 e.paired = true;
+                e.panel.textContent = e.panel.label;
             });
         }
         
