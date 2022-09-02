@@ -1,9 +1,11 @@
 const board = [];
+const images = [];
 const cardNumX = 5;
 const cardNumY = 5;
 const cardSize = 200;
 const cardMargin = 10;
 const init = () => {
+    initFileReader()
     const container = document.createElement("div");
     container.style.position = "relative";
     document.body.appendChild(container);
@@ -30,6 +32,36 @@ const init = () => {
             }
         }
     }
+}
+
+const initFileReader = () => {
+    const inputFile = document.createElement("input");
+    inputFile.setAttribute("type", "file");
+    inputFile.setAttribute("id", "inputFile");
+    inputFile.setAttribute("multiple", "true");
+    inputFile.addEventListener("change", handleFiles, false);
+    document.body.appendChild(inputFile);
+}
+
+const handleFiles = (e) => {
+    const fileList = e.srcElement.files;
+
+    // https://atmarkit.itmedia.co.jp/ait/articles/1112/16/news135.html
+    Object.keys(fileList).forEach((e) => {
+        const label = fileList[e].name.split("-")[0];
+        console.log(label);
+
+        const fileReader = new FileReader();
+        fileReader.addEventListener("load", (e) => {
+            images.push({
+                label: label
+                ,data: e.target.result
+            });
+        });
+        console.log(fileList[e])
+        fileReader.readAsDataURL(fileList[e]);
+        console.log(images)
+    });
 }
 
 let isAnimation = false
