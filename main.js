@@ -95,7 +95,7 @@ const initCards = () => {
             card.style.borderRadius = `10px`;
             card.style.transition = `all 150ms linear`;
             container.appendChild(card);
-            board[y][x] = {card, x: x, y: y, opened: 0, tried: false, paired: false};
+            board[y][x] = {card, x: x, y: y, opened: false, tried: false, paired: false};
             card.onpointerdown = (e) => {
                 e.preventDefault();
                 ondown(x, y);
@@ -112,16 +112,14 @@ const flip = async (x, y) => {
 
     const card = board[y][x].card;
     let opened = board[y][x].opened;
-    opened = 1 - opened;
+    opened = !opened;
 
     card.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
-    card.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
     card.style.backgroundImage = (opened) ? card.imageURL : null
     card.style.transform = "perspective(150px) rotateY(-90deg)"
     card.parentElement.appendChild(card);
     await new Promise(r => setTimeout(r, 50));
-    card.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
     card.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
 
@@ -176,7 +174,7 @@ const ondown = async (x, y) => {
     }
     printState()
 
-    isGameOver = board.flat().every((v) => v.opened === 1);
+    isGameOver = board.flat().every((v) => v.opened);
 };
 
 /**
