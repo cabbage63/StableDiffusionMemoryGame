@@ -135,6 +135,9 @@ const flip = async (x, y) => {
  * @todo early return as to prohibit click selected card again
  */
 const ondown = async (x, y) => {
+    if(board[y][x].tried){
+        return
+    }
     if(board[y][x].paired){
         return;
     }
