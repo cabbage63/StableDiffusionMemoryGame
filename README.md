@@ -1,10 +1,10 @@
-# Stable Diffusion Nervous Breakdown 
+# Stable Diffusion Memory Game
 
 https://user-images.githubusercontent.com/7237868/188195325-c6bc552e-6e3b-47df-9f7c-a9ba32abd782.mp4
 
 ## Play Here
 
-https://cabbage63.github.io/StableDiffusionNervousBreakdown/
+https://cabbage63.github.io/StableDiffusionMemoryGame/
 
 ## Naming rule of image files
 
