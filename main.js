@@ -77,31 +77,34 @@ const initCards = () => {
     for(let y = 0; y < cardNumY; y++){
         board[y] = [];
         for(let x = 0; x < cardNumX; x++){
-            console.log(shuffledImages[x+y*cardNumX])
             const card = document.createElement("div");
-            card.style.textAlign = `center`
-            card.style.fontSize = `24px`
-            card.style.overflowWrap = `break-word`
-            card.style.textShadow = `0px 2px 1px white, 0px -2px 1px white, 2px -2px 1px white, 2px -2px 1px white, -2px -2px 1px white, -2px -2px 1px white`
-            card.style.position = `absolute`;
-            card.style.left = `${x * cardSize}px`;
-            card.style.top = `${y * cardSize}px`;
-            card.style.width = `${cardSize-cardMargin}px`;
-            card.style.height = `${cardSize-cardMargin}px`;
-            card.style.backgroundColor = `#b0c4de`;
-            card.style.backgroundSize = `cover`
+            styleCard(card, x, y);
             card.label = shuffledImages[x+y*cardNumX].label;
             card.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
-            card.style.borderRadius = `10px`;
-            card.style.transition = `all 150ms linear`;
             container.appendChild(card);
-            board[y][x] = {card, x: x, y: y, opened: false, tried: false, paired: false};
             card.onpointerdown = (e) => {
                 e.preventDefault();
                 ondown(x, y);
             }
+            board[y][x] = {card, x: x, y: y, opened: false, tried: false, paired: false};
         }
     }
+}
+
+const styleCard = (card, x, y) => {
+    card.style.textAlign = `center`
+    card.style.fontSize = `24px`
+    card.style.overflowWrap = `break-word`
+    card.style.textShadow = `0px 2px 1px white, 0px -2px 1px white, 2px -2px 1px white, 2px -2px 1px white, -2px -2px 1px white, -2px -2px 1px white`
+    card.style.position = `absolute`;
+    card.style.left = `${x * cardSize}px`;
+    card.style.top = `${y * cardSize}px`;
+    card.style.width = `${cardSize-cardMargin}px`;
+    card.style.height = `${cardSize-cardMargin}px`;
+    card.style.backgroundColor = `#b0c4de`;
+    card.style.backgroundSize = `cover`
+    card.style.borderRadius = `10px`;
+    card.style.transition = `all 150ms linear`;
 }
 
 const flip = async (x, y) => {
