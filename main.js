@@ -1,16 +1,20 @@
-let cardInitialized = false;
-
+// DOM elements
 let container;
 
 // State
-trialNum = 0;
-
+let cardInitialized = false;
+let trialNum = 0;
+let isGameOver = false;
+let isInAnimation = false
 const board = [];
 const images = [];
+
+// Parameteres
 const cardNumX = 4;
 const cardNumY = 4;
 const cardSize = 200;
 const cardMargin = 10;
+
 const init = () => {
     initFileReader();
     container = document.createElement("div");
@@ -27,37 +31,36 @@ const initFileReader = () => {
     document.body.appendChild(inputFile);
 }
 
+/**
+ * When image files are uploaded, store them into images array in basde64 format.
+ * @param {Event} e 
+ */
 const handleFiles = (e) => {
-    const fileList = e.srcElement.files;
-
-    // https://atmarkit.itmedia.co.jp/ait/articles/1112/16/news135.html
+    const fileList = e.target.files;
     Object.keys(fileList).forEach((e) => {
         const label = fileList[e].name.split("-")[0];
-        console.log(label);
-
         const fileReader = new FileReader();
         fileReader.addEventListener("load", (e) => {
             images.push({
                 label: label
                 ,data: e.target.result
             });
-
-            // Check images number
             if(!cardInitialized && images.length >= cardNumX * cardNumY){
-                console.log(`meet number images.length: ${images.length}, number: ${cardNumX * cardNumY}`)
-                // setup images into cards
                 initCards();
                 cardInitialized = true;
             }
         });
-        console.log(fileList[e])
         fileReader.readAsDataURL(fileList[e]);
-        console.log(images)
     });
 }
 
-const shuffle = (arrays) => {
-    const array = arrays.slice();
+/**
+ * 
+ * @param {Array} arr
+ * @returns {Array} arr is shuffled 
+ */
+const shuffle = (arr) => {
+    const array = arr.slice();
     for (let i = array.length - 1; i >= 0; i--) {
       const randomIndex = Math.floor(Math.random() * (i + 1));
       [array[i], array[randomIndex]] = [array[randomIndex], array[i]];
@@ -65,6 +68,9 @@ const shuffle = (arrays) => {
     return array;
 }
 
+/**
+ * Generate card objects and push them into board array.
+ */
 const initCards = () => {
     const shuffledImages = shuffle(images);
 
@@ -72,25 +78,25 @@ const initCards = () => {
         board[y] = [];
         for(let x = 0; x < cardNumX; x++){
             console.log(shuffledImages[x+y*cardNumX])
-            const panel = document.createElement("div");
-            panel.style.textAlign = `center`
-            panel.style.fontSize = `24px`
-            panel.style.overflowWrap = `break-word`
-            panel.style.textShadow = `0px 2px 1px white, 0px -2px 1px white, 2px -2px 1px white, 2px -2px 1px white, -2px -2px 1px white, -2px -2px 1px white`
-            panel.style.position = `absolute`;
-            panel.style.left = `${x * cardSize}px`;
-            panel.style.top = `${y * cardSize}px`;
-            panel.style.width = `${cardSize-cardMargin}px`;
-            panel.style.height = `${cardSize-cardMargin}px`;
-            panel.style.backgroundColor = `#b0c4de`;
-            panel.style.backgroundSize = `cover`
-            panel.label = shuffledImages[x+y*cardNumX].label;
-            panel.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
-            panel.style.borderRadius = `10px`;
-            panel.style.transition = `all 150ms linear`;
-            container.appendChild(panel);
-            board[y][x] = {panel, x: x, y: y, opened: 0, tried: false, paired: false};
-            panel.onpointerdown = (e) => {
+            const card = document.createElement("div");
+            card.style.textAlign = `center`
+            card.style.fontSize = `24px`
+            card.style.overflowWrap = `break-word`
+            card.style.textShadow = `0px 2px 1px white, 0px -2px 1px white, 2px -2px 1px white, 2px -2px 1px white, -2px -2px 1px white, -2px -2px 1px white`
+            card.style.position = `absolute`;
+            card.style.left = `${x * cardSize}px`;
+            card.style.top = `${y * cardSize}px`;
+            card.style.width = `${cardSize-cardMargin}px`;
+            card.style.height = `${cardSize-cardMargin}px`;
+            card.style.backgroundColor = `#b0c4de`;
+            card.style.backgroundSize = `cover`
+            card.label = shuffledImages[x+y*cardNumX].label;
+            card.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
+            card.style.borderRadius = `10px`;
+            card.style.transition = `all 150ms linear`;
+            container.appendChild(card);
+            board[y][x] = {card, x: x, y: y, opened: 0, tried: false, paired: false};
+            card.onpointerdown = (e) => {
                 e.preventDefault();
                 ondown(x, y);
             }
@@ -98,38 +104,43 @@ const initCards = () => {
     }
 }
 
-let isAnimation = false
 const flip = async (x, y) => {
     if(x < 0 || y < 0 || x >= cardNumX || y >= cardNumY){
         return;
     }
-    isAnimation = true;
+    isInAnimation = true;
 
-    const panel = board[y][x].panel;
+    const card = board[y][x].card;
     let opened = board[y][x].opened;
     opened = 1 - opened;
 
-    panel.style.transform = "perspective(150px) rotateY(0deg)"
+    card.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
-    panel.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
-    panel.style.backgroundImage = (opened) ? panel.imageURL : null
-    panel.style.transform = "perspective(150px) rotateY(-90deg)"
-    panel.parentElement.appendChild(panel);
+    card.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
+    card.style.backgroundImage = (opened) ? card.imageURL : null
+    card.style.transform = "perspective(150px) rotateY(-90deg)"
+    card.parentElement.appendChild(card);
     await new Promise(r => setTimeout(r, 50));
-    panel.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
-    panel.style.transform = "perspective(150px) rotateY(0deg)"
+    card.style.backgroundColor = (opened) ? "#00f" : "#b0c4de"
+    card.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
 
-    isAnimation = false;
+    isInAnimation = false;
     board[y][x].opened = opened
 }
 
-let isGameOver = false;
+/**
+ * Callback function invoked when a card in (x, y) is clicked
+ * @param {int} x x-coordinate of the clicked card
+ * @param {int} y y-coordinate of the clicked card
+ * @returns None
+ * @todo early return as to prohibit click selected card again
+ */
 const ondown = async (x, y) => {
     if(board[y][x].paired){
         return;
     }
-    if(isAnimation){
+    if(isInAnimation){
         return;
     }
     if(isGameOver){
@@ -139,18 +150,18 @@ const ondown = async (x, y) => {
     await flip(x, y);
 
     // ステータス設定
-    console.log(`clicked: ${board[y][x].panel.label}`)
+    console.log(`clicked: ${board[y][x].card.label}`)
     board[y][x].tried = true
     if(trialNum == 2){
         // チャレンジした２枚が同じラベルならクリア扱いとする
         const triedCards = board.flat().filter(e => e.tried);
-        console.log(triedCards[0].panel.label);
-        const paired = triedCards.every( (currentValue) => currentValue.panel.label == triedCards[0].panel.label );
+        console.log(triedCards[0].card.label);
+        const paired = triedCards.every( (currentValue) => currentValue.card.label == triedCards[0].card.label );
         if (paired){
             console.log("paired!!")
             triedCards.forEach((e) => {
                 e.paired = true;
-                e.panel.textContent = e.panel.label;
+                e.card.textContent = e.card.label;
             });
         }
         
@@ -168,9 +179,12 @@ const ondown = async (x, y) => {
     isGameOver = board.flat().every((v) => v.opened === 1);
 };
 
+/**
+ * [Debug] Output each card information
+ */
 const printState = () => {
     board.flat().forEach( e => {
-        console.log(`[${e.x}, ${e.y}] label: ${e.panel.label}, opened: ${e.opened}, tried: ${e.tried}, paired:${e.paired}`)
+        console.log(`[${e.x}, ${e.y}] label: ${e.card.label}, opened: ${e.opened}, tried: ${e.tried}, paired:${e.paired}`)
     })
     console.log(`trialNum: ${trialNum}`)
 }
