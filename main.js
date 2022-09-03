@@ -81,11 +81,11 @@ const initCards = () => {
             styleCard(card, x, y);
             card.label = shuffledImages[x+y*cardNumX].label;
             card.imageURL = `url(${shuffledImages[x+y*cardNumX].data})`
-            container.appendChild(card);
             card.onpointerdown = (e) => {
                 e.preventDefault();
                 ondown(x, y);
             }
+            container.appendChild(card);
             board[y][x] = {card, x: x, y: y, opened: false, tried: false, paired: false};
         }
     }
@@ -107,10 +107,13 @@ const styleCard = (card, x, y) => {
     card.style.transition = `all 150ms linear`;
 }
 
+/**
+ * Flip a card 
+ * @param {*} x x-coordinate of the clicked card
+ * @param {*} y y-coordinate of the clicked card
+ * @returns None
+ */
 const flip = async (x, y) => {
-    if(x < 0 || y < 0 || x >= cardNumX || y >= cardNumY){
-        return;
-    }
     isInAnimation = true;
 
     const card = board[y][x].card;
@@ -121,7 +124,7 @@ const flip = async (x, y) => {
     await new Promise(r => setTimeout(r, 150));
     card.style.backgroundImage = (opened) ? card.imageURL : null
     card.style.transform = "perspective(150px) rotateY(-90deg)"
-    card.parentElement.appendChild(card);
+    card.parentElement.appendChild(card);   // tweak: prevent animation
     await new Promise(r => setTimeout(r, 50));
     card.style.transform = "perspective(150px) rotateY(0deg)"
     await new Promise(r => setTimeout(r, 150));
@@ -150,38 +153,35 @@ const ondown = async (x, y) => {
     if(isGameOver){
         return;
     }
-    trialNum++;
     await flip(x, y);
-
-    // ステータス設定
-    console.log(`clicked: ${board[y][x].card.label}`)
+    
+    trialNum++;
     board[y][x].tried = true
     if(trialNum == 2){
-        // チャレンジした２枚が同じラベルならクリア扱いとする
-        const triedCards = board.flat().filter(e => e.tried);
-        console.log(triedCards[0].card.label);
-        const paired = triedCards.every( (currentValue) => currentValue.card.label == triedCards[0].card.label );
-        if (paired){
-            console.log("paired!!")
-            triedCards.forEach((e) => {
-                e.paired = true;
-                e.card.textContent = e.card.label;
-            });
-        }
-        
-        // オープンしているもののうちクリアしていないものを裏返す。
-        console.log(board.flat())
-        board.flat().filter(e => e.tried && !e.paired).forEach( (e) => {
-            flip(e.x, e.y);
-        });
-
-        triedCards.forEach(e => e.tried = false);
-        trialNum = 0
+        judgeTriedCards();
     }
-    printState()
-
+    printState();
+    
     isGameOver = board.flat().every((v) => v.opened);
 };
+
+/**
+ * Judge if 2 tried cards are paired and change their state depends on the judgement result.
+ */
+const judgeTriedCards = () => {
+    const triedCards = board.flat().filter(e => e.tried);
+    const paired = triedCards.every( (currentValue) => currentValue.card.label == triedCards[0].card.label );        
+    triedCards.forEach((e) => {
+        if(paired){
+            e.paired = true;
+            e.card.textContent = e.card.label;
+        }else{
+            flip(e.x, e.y)
+        }
+        e.tried = false;
+    });
+    trialNum = 0;
+}
 
 /**
  * [Debug] Output each card information
